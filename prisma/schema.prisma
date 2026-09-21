@@ -1,0 +1,237 @@
+// Schema for a multi-tenant SaaS: each "Organization" is one subscribing association
+// with its own fully customizable public homepage, media library and subscription.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Tenancy & Auth
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  PLATFORM_ADMIN // manages the SaaS itself (plans, all organizations)
+  ORG_ADMIN // manages one organization's site, members, subscription
+  ORG_EDITOR // can edit content but not billing/users
+}
+
+model User {
+  id             String        @id @default(cuid())
+  email          String        @unique
+  passwordHash   String
+  name           String
+  role           UserRole      @default(ORG_ADMIN)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+}
+
+// A member of the association itself (public "Espace Membre" login),
+// distinct from platform Users who administer the site.
+model Member {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  email          String
+  passwordHash   String
+  fullName       String
+  status         MemberStatus @default(PENDING)
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@unique([organizationId, email])
+  @@index([organizationId])
+}
+
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+// ---------------------------------------------------------------------------
+// Organization (the tenant) & its site content
+// ---------------------------------------------------------------------------
+
+model Organization {
+  id           String    @id @default(cuid())
+  name         String
+  slug         String    @unique // used for the default subdomain / dev path routing
+  customDomain String?   @unique
+  status       OrgStatus @default(TRIAL)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  settings     SiteSettings?
+  sections     Section[]
+  media        Media[]
+  users        User[]
+  members      Member[]
+  subscription Subscription?
+  payments     Payment[]
+}
+
+enum OrgStatus {
+  TRIAL
+  ACTIVE
+  SUSPENDED
+  CANCELED
+}
+
+// Global, site-wide customization: branding, header nav, footer, contact info.
+model SiteSettings {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  siteName       String
+  tagline        String?
+  logoUrl        String?
+  faviconUrl     String?
+  primaryColor   String  @default("#C8901F")
+  secondaryColor String  @default("#1F1B16")
+
+  navLinks        Json    @default("[]") // [{label, href, order}]
+  showAdherer     Boolean @default(true)
+  adhererLabel    String  @default("ADHÉRER")
+  adhererHref     String  @default("/adherer")
+  showMemberArea  Boolean @default(true)
+  memberAreaLabel String  @default("ESPACE MEMBRE")
+  memberAreaHref  String  @default("/espace-membre")
+
+  footerText     String?
+  socialLinks    Json    @default("[]") // [{platform, url}]
+  contactEmail   String?
+  contactPhone   String?
+  contactAddress String?
+
+  updatedAt DateTime @updatedAt
+}
+
+enum SectionType {
+  HERO
+  STATS
+  FEATURES
+  NETWORK_MAP
+  NEWS_NEWSLETTER
+  COMMUNITY_GRID
+  TESTIMONIAL
+  CTA_FOOTER
+  CUSTOM_HTML
+}
+
+// One editable, reorderable block on the public homepage.
+// `content` shape depends on `type` — validated in code, see lib/sections/schemas.ts
+model Section {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  type           SectionType
+  order          Int          @default(0)
+  enabled        Boolean      @default(true)
+  content        Json         @default("{}")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([organizationId, order])
+}
+
+model Media {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  url            String
+  filename       String
+  mimeType       String
+  sizeBytes      Int
+  width          Int?
+  height         Int?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+}
+
+// ---------------------------------------------------------------------------
+// Billing: plans, subscriptions, payments (SasPay mobile-money aggregator)
+// ---------------------------------------------------------------------------
+
+enum BillingInterval {
+  MONTHLY
+  YEARLY
+}
+
+model Plan {
+  id         String          @id @default(cuid())
+  name       String
+  slug       String          @unique
+  priceCents Int
+  currency   String          @default("XOF")
+  interval   BillingInterval @default(MONTHLY)
+  features   Json            @default("{}") // {maxSections, customDomain, storageMb, removeBranding}
+  isActive   Boolean         @default(true)
+  createdAt  DateTime        @default(now())
+
+  subscriptions Subscription[]
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+model Subscription {
+  id                 String             @id @default(cuid())
+  organizationId     String             @unique
+  organization       Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  planId             String
+  plan               Plan               @relation(fields: [planId], references: [id])
+  status             SubscriptionStatus @default(TRIALING)
+  currentPeriodStart DateTime           @default(now())
+  currentPeriodEnd   DateTime
+  cancelAtPeriodEnd  Boolean            @default(false)
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+
+  payments Payment[]
+}
+
+enum PaymentProviderName {
+  SASPAY
+  MOCK
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model Payment {
+  id             String              @id @default(cuid())
+  organizationId String
+  organization   Organization        @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscriptionId String?
+  subscription   Subscription?       @relation(fields: [subscriptionId], references: [id])
+  provider       PaymentProviderName
+  providerRef    String? // external transaction/token id from the payment aggregator
+  amountCents    Int
+  currency       String              @default("XOF")
+  status         PaymentStatus       @default(PENDING)
+  rawPayload     Json?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+
+  @@index([organizationId])
+  @@index([providerRef])
+}
