@@ -126,6 +126,40 @@ renseigné dans `.env` (l'IP publique de ce serveur) ; sinon, on recommande un
 sous-domaine en CNAME. Le certificat TLS pour le domaine du client reste à la charge
 de l'infrastructure (reverse proxy / Let's Encrypt) — non géré par l'application elle-même.
 
+## Déploiement sur Coolify (ou tout hébergeur Docker)
+
+Le `Dockerfile` à la racine construit une image de production autonome (build
+multi-étapes, sortie Next.js `standalone`) et applique automatiquement les
+migrations Prisma au démarrage du conteneur (`docker-entrypoint.sh`) avant de
+lancer le serveur — aucune commande manuelle n'est nécessaire après le déploiement.
+
+Dans Coolify :
+
+1. Créez une nouvelle **Application** à partir de ce dépôt Git ; Coolify détecte
+   le `Dockerfile` automatiquement (build pack "Dockerfile").
+2. Si votre base PostgreSQL est un service Coolify du même projet, utilisez son
+   **nom d'hôte interne** (visible sur la page du service database) dans
+   `DATABASE_URL` — les deux services communiquent alors directement sur le
+   réseau Docker interne, sans passer par Internet.
+3. Renseignez les variables d'environnement de l'application (onglet
+   *Environment Variables*) :
+
+   | Variable | Valeur |
+   | --- | --- |
+   | `DATABASE_URL` | Chaîne de connexion du service Postgres Coolify |
+   | `JWT_SECRET` | Une valeur aléatoire **différente** de celle du `.env` local |
+   | `APP_BASE_URL` | URL publique de l'app (ex. `https://power-asso.mondomaine.com`) |
+   | `APP_BASE_DOMAIN` | Domaine racine sans le sous-domaine (ex. `mondomaine.com`) |
+   | `APP_SERVER_IP` | IP publique du serveur, si vous voulez auto-vérifier les domaines clients en A |
+   | `PAYMENT_PROVIDER` | `mock` pour tester, `saspay` en production |
+   | `SASPAY_*` | Identifiants réels une fois obtenus |
+   | `UPLOAD_DIR` | `./public/uploads` (défaut) |
+
+4. **Stockage persistant** : montez un volume Coolify sur `/app/public/uploads`
+   — sans ça, les images importées par les associations disparaissent à chaque
+   redéploiement (le conteneur est reconstruit à neuf).
+5. Le port exposé par le conteneur est `3000` (Coolify le détecte via `EXPOSE`).
+
 ## Limites connues / prochaines étapes
 
 - L'espace membre (`/espace-membre`) est volontairement minimal (inscription +
