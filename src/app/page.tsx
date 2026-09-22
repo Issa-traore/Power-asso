@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { Globe2, Image as ImageIcon, CreditCard, LayoutTemplate } from "lucide-react";
 
@@ -14,7 +15,10 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <span className="text-lg font-extrabold tracking-tight">Power-asso</span>
+        <Link href="/" className="flex items-center gap-2">
+          <Image src="/brand/power-asso-icon.png" alt="Power-asso" width={36} height={36} className="h-9 w-9" priority />
+          <span className="text-lg font-extrabold tracking-tight">Power-asso</span>
+        </Link>
         <nav className="flex items-center gap-3">
           <Link href="/login" className="text-sm font-medium text-neutral-600 hover:text-neutral-900">
             Connexion

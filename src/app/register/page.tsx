@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { register } from "@/lib/actions/auth-actions";
 
@@ -10,7 +11,8 @@ export default function RegisterPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12">
       <div className="w-full max-w-sm rounded-xl border border-neutral-200 bg-white p-8 shadow-sm">
-        <h1 className="text-xl font-bold">Créez le site de votre association</h1>
+        <Image src="/brand/power-asso-icon.png" alt="Power-asso" width={40} height={40} className="h-10 w-10" />
+        <h1 className="mt-4 text-xl font-bold">Créez le site de votre association</h1>
         <p className="mt-1 text-sm text-neutral-500">14 jours d&apos;essai, sans engagement.</p>
 
         <form action={formAction} className="mt-6 space-y-4">
