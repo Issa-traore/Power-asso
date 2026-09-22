@@ -62,13 +62,14 @@ enum MemberStatus {
 // ---------------------------------------------------------------------------
 
 model Organization {
-  id           String    @id @default(cuid())
-  name         String
-  slug         String    @unique // used for the default subdomain / dev path routing
-  customDomain String?   @unique
-  status       OrgStatus @default(TRIAL)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id                 String       @id @default(cuid())
+  name               String
+  slug               String       @unique // used for the default subdomain / dev path routing
+  customDomain       String?      @unique // e.g. "www.monassociation.org", bought & owned by the tenant elsewhere
+  customDomainStatus DomainStatus @default(PENDING)
+  status             OrgStatus    @default(TRIAL)
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
 
   settings     SiteSettings?
   sections     Section[]
@@ -84,6 +85,11 @@ enum OrgStatus {
   ACTIVE
   SUSPENDED
   CANCELED
+}
+
+enum DomainStatus {
+  PENDING // domain saved, DNS not confirmed yet — proxy.ts will not route traffic to it
+  VERIFIED // DNS confirmed to point at this platform — live
 }
 
 // Global, site-wide customization: branding, header nav, footer, contact info.
@@ -163,21 +169,15 @@ model Media {
 // Billing: plans, subscriptions, payments (SasPay mobile-money aggregator)
 // ---------------------------------------------------------------------------
 
-enum BillingInterval {
-  MONTHLY
-  YEARLY
-}
-
 model Plan {
-  id         String          @id @default(cuid())
-  name       String
-  slug       String          @unique
-  priceCents Int
-  currency   String          @default("XOF")
-  interval   BillingInterval @default(MONTHLY)
-  features   Json            @default("{}") // {maxSections, customDomain, storageMb, removeBranding}
-  isActive   Boolean         @default(true)
-  createdAt  DateTime        @default(now())
+  id                String   @id @default(cuid())
+  name              String
+  slug              String   @unique
+  monthlyPriceCents Int // base price for a 1-month period; 3/12-month checkout applies a discount (see lib/billing/durations.ts)
+  currency          String   @default("XOF")
+  features          Json     @default("{}") // {maxSections, customDomain, storageMb, removeBranding}
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
 
   subscriptions Subscription[]
 }
@@ -227,6 +227,7 @@ model Payment {
   providerRef    String? // external transaction/token id from the payment aggregator
   amountCents    Int
   currency       String              @default("XOF")
+  periodMonths   Int                 @default(1) // billing duration purchased: 1, 3, or 12 months
   status         PaymentStatus       @default(PENDING)
   rawPayload     Json?
   createdAt      DateTime            @default(now())

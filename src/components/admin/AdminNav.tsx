@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/lib/actions/auth-actions";
-import { LayoutDashboard, LayoutTemplate, Image as ImageIcon, CreditCard, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, LayoutTemplate, Image as ImageIcon, CreditCard, Settings, Globe, LogOut } from "lucide-react";
 
 const links = [
   { href: "/admin", label: "Tableau de bord", icon: LayoutDashboard },
   { href: "/admin/site", label: "Page d'accueil", icon: LayoutTemplate },
   { href: "/admin/site/settings", label: "Apparence & en-tête", icon: Settings },
+  { href: "/admin/site/domain", label: "Domaine personnalisé", icon: Globe },
   { href: "/admin/media", label: "Médiathèque", icon: ImageIcon },
   { href: "/admin/billing", label: "Abonnement", icon: CreditCard },
 ];

@@ -22,5 +22,8 @@ export async function getPublicOrganization(slug: string) {
 }
 
 export async function getOrganizationByCustomDomain(domain: string) {
-  return prisma.organization.findUnique({ where: { customDomain: domain }, select: { slug: true } });
+  return prisma.organization.findFirst({
+    where: { customDomain: domain, customDomainStatus: "VERIFIED" },
+    select: { slug: true },
+  });
 }

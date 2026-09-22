@@ -26,26 +26,22 @@ export function PlanForm({ plan, onDone }: { plan?: Plan; onDone?: () => void })
         <input name="slug" defaultValue={plan?.slug} required className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-sm" />
       </div>
       <div>
-        <label className="block text-xs font-medium text-neutral-500">Prix</label>
+        <label className="block text-xs font-medium text-neutral-500">Prix mensuel</label>
         <input
           type="number"
           step="0.01"
           name="price"
-          defaultValue={plan ? plan.priceCents / 100 : undefined}
+          defaultValue={plan ? plan.monthlyPriceCents / 100 : undefined}
           required
           className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-sm"
         />
+        <p className="mt-1 text-[11px] text-neutral-400">
+          Les abonnés choisissent 1, 3 ou 12 mois au paiement ; les remises (3 et 12 mois) sont appliquées automatiquement.
+        </p>
       </div>
       <div>
         <label className="block text-xs font-medium text-neutral-500">Devise</label>
         <input name="currency" defaultValue={plan?.currency ?? "XOF"} className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-sm" />
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-neutral-500">Périodicité</label>
-        <select name="interval" defaultValue={plan?.interval ?? "MONTHLY"} className="mt-1 w-full rounded border border-neutral-300 px-2 py-1.5 text-sm">
-          <option value="MONTHLY">Mensuel</option>
-          <option value="YEARLY">Annuel</option>
-        </select>
       </div>
       <div>
         <label className="block text-xs font-medium text-neutral-500">Nombre de sections max</label>

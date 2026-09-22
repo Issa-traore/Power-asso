@@ -64,7 +64,7 @@ export async function register(_prev: ActionState, formData: FormData): Promise<
     slug = `${baseSlug}-${attempt++}`;
   }
 
-  const plan = await prisma.plan.findFirst({ where: { isActive: true }, orderBy: { priceCents: "asc" } });
+  const plan = await prisma.plan.findFirst({ where: { isActive: true }, orderBy: { monthlyPriceCents: "asc" } });
   if (!plan) return { error: "Aucun plan d'abonnement n'est configuré. Contactez la plateforme." };
 
   const passwordHash = await hashPassword(password);

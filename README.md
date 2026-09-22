@@ -70,6 +70,12 @@ abstraction facilement remplaçable par un stockage objet type S3 en production)
 
 ## Abonnement & paiement (SasPay)
 
+Chaque forfait (`Plan`) a un prix mensuel de base ; au moment de payer, l'admin de
+l'association choisit une durée — **1, 3 ou 12 mois** — avec une remise automatique
+sur 3 et 12 mois (voir `src/lib/billing/durations.ts`). Passer à un forfait supérieur
+(plus de sections, domaine personnalisé...) se fait depuis `/admin/billing` en un clic,
+avec le nombre de sections utilisées affiché pour savoir quand upgrader.
+
 `PAYMENT_PROVIDER` dans `.env` bascule entre :
 
 - `mock` (par défaut) : aucune dépendance externe, une page `/mock-pay/[paymentId]`
@@ -101,12 +107,28 @@ src/app/admin/               Back-office d'une association (ORG_ADMIN)
 src/app/platform/            Back-office de la plateforme (PLATFORM_ADMIN)
 ```
 
+## Domaine personnalisé
+
+Sur les forfaits qui incluent `customDomain`, chaque association peut connecter un
+nom de domaine acheté chez n'importe quel registrar externe (OVH, Namecheap,
+Google Domains...) depuis `/admin/site/domain` :
+
+1. L'admin saisit son domaine (ex. `www.monassociation.org`).
+2. Il configure chez son registrar un **CNAME** vers `APP_BASE_DOMAIN` (sous-domaine,
+   recommandé — vérifiable automatiquement) ou un **A** vers l'IP du serveur
+   (domaine racine).
+3. Il clique sur « Vérifier la configuration DNS » : `src/lib/actions/domain-actions.ts`
+   interroge le DNS réel. Le domaine n'est routé par `src/proxy.ts` qu'une fois
+   confirmé (`customDomainStatus = VERIFIED`).
+
+Un enregistrement A ne peut être vérifié automatiquement que si `APP_SERVER_IP` est
+renseigné dans `.env` (l'IP publique de ce serveur) ; sinon, on recommande un
+sous-domaine en CNAME. Le certificat TLS pour le domaine du client reste à la charge
+de l'infrastructure (reverse proxy / Let's Encrypt) — non géré par l'application elle-même.
+
 ## Limites connues / prochaines étapes
 
 - L'espace membre (`/espace-membre`) est volontairement minimal (inscription +
   connexion) : c'est une base à enrichir (annuaire, forum, mentorat...) si besoin.
-- Les domaines personnalisés sont supportés au niveau applicatif (`customDomain` +
-  proxy) ; la partie infrastructure (DNS, certificat TLS) reste à mettre en place
-  selon l'hébergeur choisi.
 - Le stockage des médias est local au serveur ; pour un déploiement multi-instance,
   remplacer `src/lib/media/storage.ts` par un provider S3-compatible.

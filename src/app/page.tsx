@@ -9,7 +9,7 @@ function formatAmount(cents: number, currency: string) {
 }
 
 export default async function Home() {
-  const plans = await prisma.plan.findMany({ where: { isActive: true }, orderBy: { priceCents: "asc" } });
+  const plans = await prisma.plan.findMany({ where: { isActive: true }, orderBy: { monthlyPriceCents: "asc" } });
 
   return (
     <div className="min-h-screen bg-white">
@@ -67,8 +67,8 @@ export default async function Home() {
               <div key={plan.id} className="rounded-xl border border-neutral-200 p-6 text-center">
                 <div className="font-semibold">{plan.name}</div>
                 <div className="mt-2 text-2xl font-bold">
-                  {formatAmount(plan.priceCents, plan.currency)}
-                  <span className="text-sm font-normal text-neutral-500">/{plan.interval === "YEARLY" ? "an" : "mois"}</span>
+                  {formatAmount(plan.monthlyPriceCents, plan.currency)}
+                  <span className="text-sm font-normal text-neutral-500">/mois</span>
                 </div>
                 <Link href="/register" className="mt-4 inline-block rounded bg-neutral-900 px-4 py-2 text-sm font-semibold text-white">
                   Choisir

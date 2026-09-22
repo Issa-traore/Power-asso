@@ -1,5 +1,6 @@
 import "server-only";
 
+import { addMonths } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import type { NormalizedPaymentStatus } from "./types";
 import { saspayProvider } from "./saspay";
@@ -8,7 +9,7 @@ import { saspayProvider } from "./saspay";
 export async function applyPaymentResult(paymentId: string, status: NormalizedPaymentStatus, raw: unknown) {
   const payment = await prisma.payment.findUnique({
     where: { id: paymentId },
-    include: { subscription: { include: { plan: true } } },
+    include: { subscription: true },
   });
   if (!payment || payment.status === "SUCCESS") return payment; // already settled, no-op
 
@@ -20,14 +21,13 @@ export async function applyPaymentResult(paymentId: string, status: NormalizedPa
   });
 
   if (status === "SUCCESS" && payment.subscription) {
-    const days = payment.subscription.plan.interval === "YEARLY" ? 365 : 30;
     const now = new Date();
     await prisma.subscription.update({
       where: { id: payment.subscription.id },
       data: {
         status: "ACTIVE",
         currentPeriodStart: now,
-        currentPeriodEnd: new Date(now.getTime() + days * 24 * 60 * 60 * 1000),
+        currentPeriodEnd: addMonths(now, payment.periodMonths),
         cancelAtPeriodEnd: false,
       },
     });

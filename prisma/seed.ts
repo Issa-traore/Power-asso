@@ -9,25 +9,15 @@ async function main() {
     {
       slug: "essentiel",
       name: "Essentiel",
-      priceCents: 1_500_000, // 15 000 XOF
+      monthlyPriceCents: 1_500_000, // 15 000 XOF / mois
       currency: "XOF",
-      interval: "MONTHLY" as const,
       features: { maxSections: 6, customDomain: false, storageMb: 200, removeBranding: false },
     },
     {
       slug: "pro",
       name: "Pro",
-      priceCents: 3_500_000, // 35 000 XOF
+      monthlyPriceCents: 3_500_000, // 35 000 XOF / mois
       currency: "XOF",
-      interval: "MONTHLY" as const,
-      features: { maxSections: 20, customDomain: true, storageMb: 2000, removeBranding: true },
-    },
-    {
-      slug: "pro-annuel",
-      name: "Pro Annuel",
-      priceCents: 33_600_000, // 336 000 XOF (20% de remise vs mensuel)
-      currency: "XOF",
-      interval: "YEARLY" as const,
       features: { maxSections: 20, customDomain: true, storageMb: 2000, removeBranding: true },
     },
   ];

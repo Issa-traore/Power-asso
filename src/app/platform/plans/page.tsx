@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { PlanForm } from "@/components/platform/PlanForm";
 
 export default async function PlatformPlansPage() {
-  const plans = await prisma.plan.findMany({ orderBy: { priceCents: "asc" } });
+  const plans = await prisma.plan.findMany({ orderBy: { monthlyPriceCents: "asc" } });
 
   return (
     <div className="mx-auto max-w-3xl">

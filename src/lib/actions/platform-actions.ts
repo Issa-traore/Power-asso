@@ -17,24 +17,22 @@ export async function upsertPlan(_prev: { error?: string } | undefined, formData
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const slug = String(formData.get("slug") ?? "").trim();
-  const priceCents = Math.round(Number(formData.get("price") ?? 0) * 100);
+  const monthlyPriceCents = Math.round(Number(formData.get("price") ?? 0) * 100);
   const currency = String(formData.get("currency") ?? "XOF");
-  const interval = String(formData.get("interval") ?? "MONTHLY") as "MONTHLY" | "YEARLY";
   const maxSections = Number(formData.get("maxSections") ?? 10);
   const storageMb = Number(formData.get("storageMb") ?? 500);
   const customDomain = formData.get("customDomain") === "on";
   const isActive = formData.get("isActive") === "on";
 
-  if (!name || !slug || priceCents < 0) {
+  if (!name || !slug || monthlyPriceCents < 0) {
     return { error: "Merci de renseigner un nom, un identifiant et un prix valides." };
   }
 
   const data = {
     name,
     slug,
-    priceCents,
+    monthlyPriceCents,
     currency,
-    interval,
     features: { maxSections, storageMb, customDomain, removeBranding: customDomain },
     isActive,
   };

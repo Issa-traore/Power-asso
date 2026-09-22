@@ -17,6 +17,7 @@ export default async function PlatformOrganizationsPage() {
               <th className="px-4 py-2">Association</th>
               <th className="px-4 py-2">Admin</th>
               <th className="px-4 py-2">Forfait</th>
+              <th className="px-4 py-2">Domaine</th>
               <th className="px-4 py-2">Statut</th>
               <th className="px-4 py-2">Créée le</th>
             </tr>
@@ -30,6 +31,15 @@ export default async function PlatformOrganizationsPage() {
                 </td>
                 <td className="px-4 py-2">{org.users[0]?.email ?? "—"}</td>
                 <td className="px-4 py-2">{org.subscription?.plan.name ?? "—"}</td>
+                <td className="px-4 py-2">
+                  {org.customDomain ? (
+                    <span className={org.customDomainStatus === "VERIFIED" ? "text-emerald-600" : "text-amber-600"}>
+                      {org.customDomain}
+                    </span>
+                  ) : (
+                    <span className="text-neutral-400">—</span>
+                  )}
+                </td>
                 <td className="px-4 py-2">
                   <OrgStatusSelect organizationId={org.id} status={org.status} />
                 </td>
