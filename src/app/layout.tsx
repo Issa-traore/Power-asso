@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "WCE Association — Créez le site de votre association",
+  title: "Power-asso — Créez le site de votre association",
   description: "La plateforme SaaS pour créer et personnaliser le site de votre association, avec abonnement en ligne.",
 };
 

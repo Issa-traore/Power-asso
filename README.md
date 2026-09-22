@@ -1,4 +1,4 @@
-# WCE Association
+# Power-asso
 
 Plateforme SaaS multi-tenant permettant à toute association de créer et personnaliser
 le site web de son organisation (page d'accueil modulable, images, couleurs, en-tête,

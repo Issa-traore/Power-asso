@@ -14,7 +14,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white">
       <header className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-        <span className="text-lg font-extrabold tracking-tight">WCE Association</span>
+        <span className="text-lg font-extrabold tracking-tight">Power-asso</span>
         <nav className="flex items-center gap-3">
           <Link href="/login" className="text-sm font-medium text-neutral-600 hover:text-neutral-900">
             Connexion
@@ -80,7 +80,7 @@ export default async function Home() {
       )}
 
       <footer className="border-t border-neutral-200 py-8 text-center text-sm text-neutral-500">
-        © {new Date().getFullYear()} WCE Association
+        © {new Date().getFullYear()} Power-asso
       </footer>
     </div>
   );
